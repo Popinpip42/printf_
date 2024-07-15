@@ -2,26 +2,26 @@
 #include <stdarg.h>
 #include "printf.h"
 
-#define DISPATCHER_SIZE 6
-
 int	ft_printf(const char *format, ...)
 {
-	t_dispatcher_entry	*dispatcher;
-	va_list				args;
-	int					count;
-	int					found;
-	int					i;
+	t_dispatcher	*dispatcher;
+	va_list			args;
+	int				count;
+	int				found;
+	int				i;
+	size_t			dispatcher_size;
 
 	count = 0;
-	found = 0;
 	dispatcher = get_dispatcher(&dispatcher_size);
 	va_start(args, format);
 	while (*format)
 	{
-		if (*format == "%")
+		if (*format == '%')
 		{
 			++format;
-			while (i < DISTPACHER_SIZE)
+			found = 0;
+			i = 0;
+			while (i < DISPATCHER_SIZE)
 			{
 				if (dispatcher[i].specifier == *format)
 				{
@@ -38,11 +38,15 @@ int	ft_printf(const char *format, ...)
 			}
 		}
 		else
-			write(1, format++, 1);
+		{
+			write(1, format, 1);
+			count++;
+		}
 		++format;
 	}
 	va_end(args);
-	return (0);
+	free(dispatcher);
+	return (count);
 }
 
 int	main(void)
@@ -53,7 +57,7 @@ int	main(void)
 	ft_printf("Decimal: %d\n", 12345);
 	ft_printf("Integer: %i\n", -12345);
 	ft_printf("Unsigned: %u\n", 12345);
-	ft_printf("Hex Lowercase: %x\n", 12345);
-	ft_printf("Hex Uppercase: %X\n", 12345);
+	ft_printf("Hex Lowercase: %x\n", 15);
+	ft_printf("Hex Uppercase: %X\n", 15);
 	ft_printf("Percent: %%\n");
 }

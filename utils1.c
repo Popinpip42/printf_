@@ -12,7 +12,7 @@ void	write_str(const char *s, int *count)
 		write_char(*s++, count);
 }
 
-void	write_unsiged(unsigned int num, int base, int uppercase, int *count)
+void	write_unsigned(unsigned int num, int base, int uppercase, int *count)
 {
 	char		buffer[32];
 	int			i;
