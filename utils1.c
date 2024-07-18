@@ -1,24 +1,36 @@
-#include "printf.h"
+#include "ft_printf.h"
 
-void	write_char(char c, int *count)
+int	write_char(char c, int *count)
 {
-	write(1, &c, 1);
+	if (write(1, &c, 1) < 0)
+		return (-1);
 	(*count)++;
+	return (0);
 }
 
-void	write_str(const char *s, int *count)
+int	write_str(const char *s, int *count)
 {
+	if (!s)
+	{
+		if (write_str("(null)", count) < 0)
+			return (-1);
+		return (0);
+	}
 	while (*s)
-		write_char(*s++, count);
+	{
+		if (write_char(*s++, count) < 0)
+			return (-1);
+	}
+	return (0);
 }
 
-void	write_unsigned(unsigned int num, int base, int uppercase, int *count)
+int	write_unsigned(unsigned long num, int base, int isupper, int *c)
 {
 	char		buffer[32];
 	int			i;
 	const char	*digits;
 
-	if (uppercase)
+	if (isupper)
 		digits = "0123456789ABCDEF";
 	else
 		digits = "0123456789abcdef";
@@ -34,24 +46,32 @@ void	write_unsigned(unsigned int num, int base, int uppercase, int *count)
 			num /= base;
 		}
 	}
-	write_str(&buffer[i + 1], count);
+	if (write_str(&buffer[i + 1], c) < 0)
+		return (-1);
+	return (0);
 }
 
-void	write_signed(int num, int *count)
+int	write_signed(int num, int *count)
 {
 	if (num < 0)
 	{
-		write_char('-', count);
+		if (write_char('-', count) < 0)
+			return (-1);
 		num = -num;
 	}
-	write_unsigned((unsigned int)num, 10, 0, count);
+	if (write_unsigned((unsigned int)num, 10, 0, count) < 0)
+		return (-1);
+	return (0);
 }
 
-void	write_pointer(void *ptr, int *count)
+int	write_pointer(void *ptr, int *count)
 {
-	uintptr_t	num;
+	unsigned long	num;
 
-	num = (uintptr_t)ptr;
-	write_str("0x", count);
-	write_unsigned(num, 16, 0, count);
+	num = (unsigned long)ptr;
+	if (write_str("0x", count) < 0)
+		return (-1);
+	if (write_unsigned(num, 16, 0, count) < 0)
+		return (-1);
+	return (0);
 }
