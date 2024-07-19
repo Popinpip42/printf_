@@ -68,6 +68,14 @@ int	write_pointer(void *ptr, int *count)
 {
 	unsigned long	num;
 
+	if (!ptr)
+	{	
+		if (write_str("(nil)", count) < 0)
+			return (-1);
+		return (0);
+	}
+	/*if (!ptr && (write_str("(nil)", count) < 0))
+		return (-1);*/
 	num = (unsigned long)ptr;
 	if (write_str("0x", count) < 0)
 		return (-1);
