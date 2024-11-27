@@ -1,23 +1,43 @@
-#include <stdio.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lsirpa-g <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/18 18:20:55 by lsirpa-g          #+#    #+#             */
+/*   Updated: 2024/07/18 19:04:06 by lsirpa-g         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
 
-int	procss(const char **f, va_list *args, int *c, t_dispatcher *dispatcher)
+int	procss(const char **f, va_list *args, t_dispatcher *dispatcher)
 {
 	int	i;
+	int	count;
 
 	++(*f);
+	count = 0;
 	i = 0;
 	while (i < 9)
 	{
 		if (dispatcher[i].specifier == **f)
-			return (dispatcher[i].func(args, c));
+		{
+			count = dispatcher[i].func(args);
+			if (count == -1)
+				return (-1);
+			return (count);
+		}
 		i++;
 	}
-	if (write_char('%', c) < 0)
+	count += write_char('%');
+	if (count == -1)
 		return (-1);
-	if (write_char(**f, c) < 0)
+	count += write_char(**f);
+	if (count == -1)
 		return (-1);
-	return (0);
+	return (count);
 }
 
 int	ft_printf(const char *format, ...)
@@ -25,6 +45,7 @@ int	ft_printf(const char *format, ...)
 	t_dispatcher	*dispatcher;
 	va_list			args;
 	int				count;
+	int				old_count;
 
 	count = 0;
 	dispatcher = get_dispatcher();
@@ -33,17 +54,13 @@ int	ft_printf(const char *format, ...)
 	va_start(args, format);
 	while (*format)
 	{
+		old_count = count;
 		if (*format == '%')
-		{
-			if (procss(&format, &args, &count, dispatcher) < 0)
-				return (free(dispatcher), -1);
-		}
+			count += procss(&format, &args, dispatcher);
 		else
-		{
-			if (write(1, format, 1) < 0)
-				return (free(dispatcher), -1);
-			count++;
-		}
+			count += write(1, format, 1);
+		if (old_count > count)
+			return (va_end(args), free(dispatcher), -1);
 		++format;
 	}
 	return (va_end(args), free(dispatcher), count);
@@ -66,7 +83,7 @@ int	main(void)
 	int original_ret, mi_ret;
 	//PRUEBA DE CARACTERES
 	printf("%s\n", "Prueba de impresión de caracteres");
-	printf("Original printf:\n");
+	printf(":::::: Original printf ::::::\n");
 	original_ret = printf("Caracter: %c\n", caracter);
 	printf("Return: %d\n", original_ret);
 	original_ret = printf("%c\n", caracter);
@@ -80,7 +97,7 @@ int	main(void)
 
 	//PRUEBA CON CADENAS
 	printf("%s\n", "Prueba de impresión de cadenas");
-	printf("Original printf:\n");
+	printf(":::::: Original printf ::::::\n");
 	original_ret = printf("Cadena: %s\n", cadena);
 	printf("Return: %d\n", original_ret);
 
@@ -90,7 +107,7 @@ int	main(void)
 
 	//PRUEBA CON CADENAS LARGAS
 	printf("%s\n", "Prueba de impresión de cadenas largas");
-	printf("Original printf:\n");
+	printf(":::::: Original printf ::::::\n");
 	original_ret = printf("Cadena larga: %s\n", cadena_larga);
 	printf("Return: %d\n", original_ret);
 
@@ -100,7 +117,7 @@ int	main(void)
 
 	//PRUEBA DE CADENAS VACIAS
 	printf("%s\n", "Prueba de impresión de cadenas vacías");
-	printf("Original printf:\n");
+	printf(":::::: Original printf ::::::\n");
 	original_ret = printf("Cadena vacía: %s\n", cadena_vacia);
 	printf("Return: %d\n", original_ret);
 
@@ -110,16 +127,17 @@ int	main(void)
 
 	//PRUEBA DE PUNTEROS
 	printf("%s\n", "Prueba de impresión de punteros");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Puntero: %p\n", puntero);
 	printf("Return: %d\n", original_ret);
 
 	printf("Mi ft_printf:\n");
 	mi_ret = ft_printf("Puntero: %p\n", puntero);
 	printf("Return: %d\n\n", mi_ret);
+	
 	//PRUEBA DE PUNTERO NULL
 	printf("%s\n", "Prueba de impresión de puntero NULL");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Puntero NULL: %p\n", puntero_null);
 	printf("Return: %d\n", original_ret);
 
@@ -129,7 +147,7 @@ int	main(void)
 
 	//PRUEBA NUMEROS DECIMALES
 	printf("%s\n", "Prueba de impresión de números decimales (base 10)");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Entero: %d\n", entero);
 	printf("Return: %d\n", original_ret);
 
@@ -139,7 +157,7 @@ int	main(void)
 
 	//PRUEBA ENTEROS
 	printf("%s\n", "Prueba de impresión de enteros (base 10)");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Entero: %i\n", entero);
 	printf("Return: %d\n", original_ret);
 
@@ -148,7 +166,7 @@ int	main(void)
 	printf("Return: %d\n\n", mi_ret);
 	//PRUEBA DECIMALES LARGOS
 	printf("%s\n", "Prueba de impresión de números decimales negativos");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Número negativo: %d\n", num_negativo);
 	printf("Return: %d\n", original_ret);
 
@@ -158,7 +176,7 @@ int	main(void)
 
 	//PRUEBA NUMEROS SIN SIGNO
 	printf("%s\n", "Prueba de impresión de números sin signo (base 10)");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Unsigned Entero: %u\n", uint_max);
 	printf("Return: %d\n", original_ret);
 
@@ -167,7 +185,7 @@ int	main(void)
 	printf("Return: %d\n\n", mi_ret);
 	//PRUEBA INT MAX, INT MIN UINT MAX
 	printf("%s\n", "Prueba de impresión de enteros máximos y mínimos");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Entero máximo: %d\n", int_max);
 	printf("Return: %d\n", original_ret);
 	original_ret = printf("Entero mínimo: %d\n", int_min);
@@ -185,7 +203,7 @@ int	main(void)
 
 	//PRUEBA PORCENTAJE
 	printf("%s\n", "Prueba de impresión de porcentaje");
-	printf("Original printf:\n");
+	printf("::::::Original printf:::::::\n");
 	original_ret = printf("Porcentaje:%%%%%%\n");
 	printf("Return: %d\n", original_ret);
 

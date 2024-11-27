@@ -1,36 +1,50 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils1.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lsirpa-g <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/18 18:21:42 by lsirpa-g          #+#    #+#             */
+/*   Updated: 2024/07/18 20:01:56 by lsirpa-g         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
 
-int	write_char(char c, int *count)
+int	write_char(char c)
 {
-	if (write(1, &c, 1) < 0)
-		return (-1);
-	(*count)++;
-	return (0);
+	return (write(1, &c, 1));
 }
 
-int	write_str(const char *s, int *count)
+int	write_str(const char *s)
 {
+	int	count;
+	int	old_count;
+
+	count = 0;
 	if (!s)
 	{
-		if (write_str("(null)", count) < 0)
-			return (-1);
-		return (0);
+		count += write_str("(null)");
+		return (count);
 	}
 	while (*s)
 	{
-		if (write_char(*s++, count) < 0)
+		old_count = count;
+		count += write_char(*s++);
+		if (old_count > count)
 			return (-1);
 	}
-	return (0);
+	return (count);
 }
 
-int	write_unsigned(unsigned long num, int base, int isupper, int *c)
+int	write_unsigned(unsigned long num, int base, int isup)
 {
 	char		buffer[32];
 	int			i;
 	const char	*digits;
 
-	if (isupper)
+	if (isup)
 		digits = "0123456789ABCDEF";
 	else
 		digits = "0123456789abcdef";
@@ -46,40 +60,45 @@ int	write_unsigned(unsigned long num, int base, int isupper, int *c)
 			num /= base;
 		}
 	}
-	if (write_str(&buffer[i + 1], c) < 0)
-		return (-1);
-	return (0);
+	return (write_str(&buffer[i + 1]));
 }
 
-int	write_signed(int num, int *count)
+int	write_signed(int num)
 {
+	int	count;
+
+	count = 0;
 	if (num < 0)
 	{
-		if (write_char('-', count) < 0)
+		count += write_char('-');
+		if (count == -1)
 			return (-1);
 		num = -num;
 	}
-	if (write_unsigned((unsigned int)num, 10, 0, count) < 0)
+	count += write_unsigned((unsigned int)num, 10, 0);
+	if (count == -1)
 		return (-1);
-	return (0);
+	return (count);
 }
 
-int	write_pointer(void *ptr, int *count)
+int	write_pointer(void *ptr)
 {
 	unsigned long	num;
+	int				count;
 
+	count = 0;
 	if (!ptr)
-	{	
-		if (write_str("(nil)", count) < 0)
-			return (-1);
-		return (0);
-	}
-	/*if (!ptr && (write_str("(nil)", count) < 0))
-		return (-1);*/
+		return (write_str("(nil)"));
 	num = (unsigned long)ptr;
-	if (write_str("0x", count) < 0)
+	count += write_str("0x");
+	if (count == -1)
 		return (-1);
-	if (write_unsigned(num, 16, 0, count) < 0)
+	count += write_unsigned(num, 16, 0);
+	if (count == -1)
 		return (-1);
-	return (0);
+	return (count);
 }
+//FOR UBUNTU FRANCINETTE
+		//return (write_str("(nil)"));
+//FOR MACOS FRANCINETTE
+		//return (write_str("0x0"));
